@@ -26,7 +26,7 @@ router.get('/:id', validateActionId,  (req,res) => {
     })
 })
 
-router.post('/', (req,res) => {
+router.post('/', validateActionPost, (req,res) => {
     Act.insert(req.body)
     .then(action => {
         res.status(201).json(action)
@@ -36,7 +36,7 @@ router.post('/', (req,res) => {
     })
 })
 
-router.put('/:id', (req,res) => {
+router.put('/:id', validateActionId, (req,res) => {
     const id = req.params.id; 
     Act.update(id, req.body)
     .then(updatedAct => {
@@ -47,7 +47,7 @@ router.put('/:id', (req,res) => {
     })
 })
 
-router.delete('/:id', (req,res) => {
+router.delete('/:id', validateActionId, (req,res) => {
     const id = req.params.id; 
 
     Act.remove(id)
@@ -84,6 +84,28 @@ function validateActionId(req,res,next) {
     })
 }
 
+function validateActionPost(req,res,next) {
+
+    const { project_id, description, notes } = req.body; 
+    // if the above doesn't work, use just req.body.project_id, etc etc. 
+
+    if (Object.keys(req.body).length > 0) {
+        if(!project_id || !description || !notes) {
+            res.status(400).json({ errorMessage: "Missing required project id, description, or notes. please fill these fields out"})
+        }
+        else {
+            if(description.length <= 128) {
+                next(); 
+            }
+            else {
+                res.status(400).json({ errorMessage: "Description can only be 128 characters long"})
+            }
+        }
+    }
+    else {
+        res.status(400).json({ errorMessage: "Missing post data"})
+    }
+}
 
 
 
